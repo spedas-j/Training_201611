@@ -5,7 +5,8 @@
 ;     read Van Allen Probes ECT/MagEIS data files 
 ; 
 ; EXAMPLES: 
-;     rbsp_load_ect_mageis, probes='a', level='l3' 
+;     rbsp_load_ect_mageis2, probes='a', level='l3' 
+;     rbsp_load_ect_mageis2, probes='a', level='l3', /cdaweb
 ; 
 ; HISTORY: 
 ;
@@ -16,7 +17,7 @@
 ;     modified and renamed by Satoshi Kurita, 2015-09-15  
 ;-
 
-pro rbsp_load_ect_mageis2, probes=probes, level=level  
+pro rbsp_load_ect_mageis2, probes=probes, level=level, cdaweb=cdaweb
 
 if not keyword_set(probes) then probes=['a','b']
 
@@ -33,26 +34,25 @@ for i=0, n_elements(probes)-1 do begin
    ;source.local_data_dir = root_data_dir()+'rbsp/rbsp'+probe+'/ect/mageis/'
    ;source.local_data_dir = root_data_dir()+'rbsp/ect/mageis/rbsp'+probe+'/'
    source.local_data_dir = root_data_dir()+'rbsp/ect/rbsp'+probe+'/mageis/leve'+level+'/'
-   source.remote_data_dir = 'http://www.rbsp-ect.lanl.gov/data_pub/rbsp'+probe $ 
-                          + '/mageis/leve'+level+'/'
+   if not keyword_set(cdaweb) then begin 
+      source.remote_data_dir = 'http://www.rbsp-ect.lanl.gov/data_pub/rbsp'+probe $ 
+                             + '/mageis/leve'+level+'/'
+      ;   Relative path with wildcards for data files
+      pathformat = 'rbsp'+probe+'_rel03_ect-mageis-' $
+                   + strupcase(level)+'_YYYYMMDD_v*.cdf'
+   endif else begin 
+      ;source.remote_data_dir = 'http://www.rbsp-ect.lanl.gov/data_pub/rbsp'+probe $ 
+      ;                       + '/mageis/leve'+level+'/'
+      source.remote_data_dir = 'http://cdaweb.sci.gsfc.nasa.gov/pub/data/rbsp/rbsp'+probe $ 
+                             + '/'+level+'/ect/mageis/rel03/' 
+      ;   Relative path with wildcards for data files
+      pathformat = 'YYYY/rbsp'+probe+'_rel03_ect-mageis-' $
+                   + strupcase(level)+'_YYYYMMDD_v*.cdf'
 
-;   Relative path with wildcards for data files
+      ;2013/
+      ;http://cdaweb.sci.gsfc.nasa.gov/pub/data/rbsp/rbspa/l2/ect/mageis/rel03/2013/
 
-;========= OLD CODE ===========
-;   case level of
-;     'l2': begin
-;               pathformat = 'rbsp'+probe+'_rel02_ect-mageis-' $
-;              pathformat = 'rbsp'+probe+'_rel03_ect-mageis-' $
-;                         + strupcase(level)+'_YYYYMMDD_v?.?.?.cdf'
-;           endcase
-;     'l3': pathformat = 'rbsp'+probe+'_rel02_ect-mageis-' $
-;              + strupcase(level)+'_YYYYMMDD_v?.?.?.cdf'
-;   endcase
-;========= OLD CODE ===========
-
-
-   pathformat = 'rbsp'+probe+'_rel03_ect-mageis-' $
-                + strupcase(level)+'_YYYYMMDD_v*.cdf'
+   endelse 
 
 
    ;Expand the wildcards in the relative file paths for designated
